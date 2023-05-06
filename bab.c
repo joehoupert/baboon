@@ -11,13 +11,17 @@ typedef struct BMP_HEADER {
     uint32_t offset;
 } __attribute__ ((packed)) BMP_HEADER;
 
-typedef struct BMP {
-    BMP_HEADER *bmp_header;
-    void *image_data;
-} BMP;
+/* Pixel array, lives at BMP_HEADER.offset */
+char *bitmap_image = NULL;
 
 int main()
 {
+
+/* 
+ *
+ * Read in the bmp
+ *
+ */
     char *in_file_name = "baboon.bmp";
 
     FILE *in_file;
@@ -29,7 +33,6 @@ int main()
 
     BMP_HEADER bmp_header;
 
-
     /* Read in the BMP header */
     fread(&bmp_header, sizeof(BMP_HEADER), 1, in_file);
 
@@ -39,15 +42,53 @@ int main()
     }
 
 
-
-    // TODO
+    // Move pointer to start of pixel array
     fseek(in_file, bmp_header.offset, SEEK_SET);
-    BMP bmp = malloc(bmp_header.size);
+    bitmap_image = (char *)malloc(bmp_header.size);
 
+    /* NEVER TRUST A MALLOC */
+    if(!bitmap_image){
+        free(bitmap_image);
+        bitmap_image = NULL;
+        fclose(in_file);
+        printf("Error malloc-ing\n");
+        exit(-1);
+    }
 
+    fread(bitmap_image, bmp_header.size, 1, in_file);
+
+    if(!bitmap_image){
+        fclose(in_file);
+        exit(-1);
+    }
 
     fclose(in_file);
     in_file = NULL;
+
+
+/*
+ *
+ * Write out a bitmap
+ *
+ */
+
+    char *out_file_name = "baboon_out.bmp";
+
+    FILE *out_file;
+    out_file = fopen(out_file_name, "wb");
+
+    if(!out_file){
+        printf("Error getting file handle: %s\n",out_file_name);
+    }
+
+
+    /* Write the header back */
+    fwrite(&bmp_header, sizeof(BMP_HEADER), 1, out_file);
+    /* Adjust write head */
+    fseek(out_file, bmp_header.offset, SEEK_SET);
+    /* Write the image array */
+    fwrite(bitmap_image, bmp_header.size - sizeof(BMP_HEADER), 1, out_file);
+
 
     return 0;
 }
