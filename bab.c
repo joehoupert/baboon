@@ -1,51 +1,53 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <stdlib.h>
 
+
+typedef struct BMP_HEADER {
+    uint16_t id;
+    uint32_t size;
+    uint32_t reserved;
+    uint32_t offset;
+} __attribute__ ((packed)) BMP_HEADER;
 
 typedef struct BMP {
-  uint16_t header;
-  uint32_t size;
-  uint32_t reserved;
-  uint32_t offset;
-} __attribute__ ((packed)) BMP;
-
-typedef struct PIXEL {
-  BMP *bmp;
-  void *pixel_field;
-} PIXEL;
+    BMP_HEADER *bmp_header;
+    void *image_data;
+} BMP;
 
 int main()
 {
-  char *in_file_name = "baboon.bmp";
+    char *in_file_name = "baboon.bmp";
 
-  FILE *in_file;
-  in_file = fopen(in_file_name, "rb");
+    FILE *in_file;
+    in_file = fopen(in_file_name, "rb");
 
-  if(!in_file){
-    printf("Error reading file: %s\n",in_file_name);
-  }
+    if(!in_file){
+        printf("Error reading file: %s\n",in_file_name);
+    }
 
-  BMP bmp;
-  
-
-  //size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
-  fread(&bmp, sizeof(BMP), 1, in_file);
-
-  if(bmp.header != 0x4d42){
-    printf("Unsupported file type: %x\n",bmp.header);
-  }
+    BMP_HEADER bmp_header;
 
 
+    /* Read in the BMP header */
+    fread(&bmp_header, sizeof(BMP_HEADER), 1, in_file);
 
-// TODO
-  fseek(in_file, sizeof(BMP), SEEK_SET);
-  PIXEL px = malloc(bmp.size);
+    /* Check 'magic' */
+    if(bmp_header.id != 0x4d42){
+        printf("Unsupported file type: %x\n",bmp_header.id);
+    }
 
 
 
-  fclose(in_file);
-  in_file = NULL;
+    // TODO
+    fseek(in_file, bmp_header.offset, SEEK_SET);
+    BMP bmp = malloc(bmp_header.size);
 
-	return 0;
+
+
+    fclose(in_file);
+    in_file = NULL;
+
+    return 0;
 }
