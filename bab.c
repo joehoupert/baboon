@@ -11,6 +11,20 @@ typedef struct BMP_HEADER {
     uint32_t offset;
 } __attribute__ ((packed)) BMP_HEADER;
 
+typedef struct DIB {
+    uint32_t size;
+    uint32_t bmp_width_px;
+    uint32_t bmp_height_px;
+    uint16_t color_planes; //must be 1
+    uint16_t color_depth; //bits per pixel
+    uint32_t compression_type;
+    uint32_t image_size;
+    uint32_t horizontal_res;
+    uint32_t vertical_res;
+    uint32_t num_colors;
+    uint32_t num_important_colors; //generally unused
+} __attribute__ ((packed)) DIB;
+
 /* Pixel array, lives at BMP_HEADER.offset */
 char *bitmap_image = NULL;
 
@@ -18,9 +32,7 @@ int main()
 {
 
 /* 
- *
- * Read in the bmp
- *
+ * Read in the bmp header
  */
     char *in_file_name = "baboon.bmp";
 
@@ -42,6 +54,22 @@ int main()
     }
 
 
+/* 
+ * Read in the DIB
+ */
+
+    DIB dib;
+
+    fseek(in_file, sizeof(BMP_HEADER), SEEK_SET);
+    fread(&dib, sizeof(DIB), 1, in_file);
+
+    /* TODO Error checking? */
+
+
+
+/* 
+ * Read in the pixel array
+ */
     // Move pointer to start of pixel array
     fseek(in_file, bmp_header.offset, SEEK_SET);
     bitmap_image = (char *)malloc(bmp_header.size);
@@ -85,7 +113,13 @@ int main()
     /* Write the header back */
     fwrite(&bmp_header, sizeof(BMP_HEADER), 1, out_file);
     /* Adjust write head */
+    fseek(out_file, sizeof(BMP_HEADER), SEEK_SET);
+
+    /* Write the DIB back */
+    fwrite(&dib, sizeof(DIB), 1, out_file);
+    /* Adjust write head */
     fseek(out_file, bmp_header.offset, SEEK_SET);
+
     /* Write the image array */
     fwrite(bitmap_image, bmp_header.size - sizeof(BMP_HEADER), 1, out_file);
 
