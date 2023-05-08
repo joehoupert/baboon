@@ -3,6 +3,10 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
+#define R_WT 0.2989
+#define G_WT 0.5870
+#define B_WT 0.1140
+
 
 typedef struct BMP_HEADER {
     uint16_t id;
@@ -24,6 +28,23 @@ typedef struct DIB {
     uint32_t num_colors;
     uint32_t num_important_colors; //generally unused
 } __attribute__ ((packed)) DIB;
+
+
+void display_dib(DIB dib){
+    printf("Bitmap Information Header \n");
+    printf("Header size: %d\n", dib.size);
+    printf("Width (px): %d\n", dib.bmp_width_px);
+    printf("Height (px): %d\n", dib.bmp_height_px);
+    printf("Color planes: %d\n", dib.color_planes);
+    printf("Color depth: %d\n", dib.color_depth);
+    printf("Compression: %d\n", dib.compression_type);
+    printf("Image size: %d\n", dib.image_size);
+    printf("Horizontal: %d\n", dib.horizontal_res);
+    printf("Vertical: %d\n", dib.vertical_res);
+    printf("Number of colors: %d\n", dib.num_colors);
+    printf("Important colors: %d\n", dib.num_important_colors);
+
+}
 
 /* Pixel array, lives at BMP_HEADER.offset */
 char *bitmap_image = NULL;
@@ -63,6 +84,8 @@ int main()
     fseek(in_file, sizeof(BMP_HEADER), SEEK_SET);
     fread(&dib, sizeof(DIB), 1, in_file);
 
+    display_dib(dib);
+
     /* TODO Error checking? */
 
 
@@ -94,6 +117,22 @@ int main()
     in_file = NULL;
 
 
+
+/* 
+ * We know that baboon.bmp has compression type 0 (R,G,B)
+ * We're also little endian, so every 3 bytes are B,G,R
+ */
+    int px = 0;
+    int tmp;
+    for(px = 0; px < dib.image_size; px+=3){
+        tmp = (bitmap_image[px]*B_WT + 
+               bitmap_image[px+1]*G_WT +
+               bitmap_image[px+2]*R_WT) / 3;
+        bitmap_image[px] = tmp;
+        bitmap_image[px+1] = tmp;
+        bitmap_image[px+2] = tmp;
+    }
+
 /*
  *
  * Write out a bitmap
@@ -121,7 +160,7 @@ int main()
     fseek(out_file, bmp_header.offset, SEEK_SET);
 
     /* Write the image array */
-    fwrite(bitmap_image, bmp_header.size - sizeof(BMP_HEADER), 1, out_file);
+    fwrite(bitmap_image, dib.image_size, 1, out_file);
 
 
     return 0;
