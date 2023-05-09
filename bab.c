@@ -47,7 +47,7 @@ void display_dib(DIB dib){
 }
 
 /* Pixel array, lives at BMP_HEADER.offset */
-char *bitmap_image = NULL;
+unsigned char *bitmap_image = NULL;
 
 int main()
 {
@@ -117,7 +117,6 @@ int main()
     in_file = NULL;
 
 
-
 /* 
  * We know that baboon.bmp has compression type 0 (R,G,B)
  * We're also little endian, so every 3 bytes are B,G,R
@@ -128,6 +127,7 @@ int main()
         tmp = (bitmap_image[px]*B_WT + 
                bitmap_image[px+1]*G_WT +
                bitmap_image[px+2]*R_WT) / 3;
+        
         bitmap_image[px] = tmp;
         bitmap_image[px+1] = tmp;
         bitmap_image[px+2] = tmp;
@@ -138,7 +138,6 @@ int main()
  * Write out a bitmap
  *
  */
-
     char *out_file_name = "baboon_out.bmp";
 
     FILE *out_file;
