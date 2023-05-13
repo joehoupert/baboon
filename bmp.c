@@ -73,7 +73,7 @@ bmp_image_t *read_bmp(FILE *file, char **err)
         if(*err == NULL)
         {
             char *msg = "ERROR: \"fread\" of header failed";
-            *err == malloc( (strlen(msg) + 1) * sizeof(**err) );
+            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
             strncpy(*err, msg, sizeof(*err));
         }
         b = NULL;
@@ -88,7 +88,7 @@ bmp_image_t *read_bmp(FILE *file, char **err)
         if(*err == NULL)
         {
             char *msg = "ERROR: \"check_bmp_header\" failed";
-            *err == malloc( (strlen(msg) + 1) * sizeof(**err) );
+            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
             strncpy(*err, msg, sizeof(*err));
         }
         b = NULL;
@@ -104,7 +104,7 @@ bmp_image_t *read_bmp(FILE *file, char **err)
 
         if(*err == NULL){
             char *msg = "ERROR: \"malloc\" failed";
-            *err == malloc( (strlen(msg) + 1) * sizeof(**err) );
+            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
             strncpy(*err, msg, sizeof(*err));
         }
         b = NULL;
@@ -121,7 +121,7 @@ bmp_image_t *read_bmp(FILE *file, char **err)
         if(*err == NULL)
         {
             char *msg = "ERROR: \"fread\" of pixel array failed";
-            *err == malloc( (strlen(msg) + 1) * sizeof(**err) );
+            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
             strncpy(*err, msg, sizeof(*err));
         }
         b = NULL;
@@ -167,7 +167,7 @@ write_bmp(FILE *file, bmp_image_t *bmp_image, char **err)
         if(*err == NULL)
         {
             char *msg = "ERROR: \"fwrite\" failed";
-            *err == malloc( (strlen(msg) + 1) * sizeof(**err) );
+            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
             strncpy(*err, msg, sizeof(*err));
         }
         return false;
