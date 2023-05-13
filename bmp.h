@@ -2,16 +2,21 @@
 #define _BMP_H_
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 #define R_WT 0.2989
 #define G_WT 0.5870
 #define B_WT 0.1140
 
-typedef struct BMP_HEADER {
+#define BMP_HEADER_SIZE 54
+#define DIB_HEADER_SIZE 40
+
+typedef struct {
     uint16_t id;                /* Magic, must be 0x4d42 */
     uint32_t size;              /* Total file size, bytes */
-    uint16_t reserved;          /* Reserved */
-    uint16_t reserved;          /* Reserved */
+    uint16_t reserved1;          /* Reserved */
+    uint16_t reserved2;          /* Reserved */
     uint32_t offset;            /* Offset where the pixel array lives */
     /* Start of the DIB */
     uint32_t dib_size;          /* Its...the DIB size */
@@ -25,34 +30,37 @@ typedef struct BMP_HEADER {
     uint32_t vertical_res;
     uint32_t num_colors;
     uint32_t num_important_colors;
-} __attribute__ ((packed)) BMP_HEADER;
+} __attribute__ ((packed)) bmp_header_t;
 
 
 /* Stores an entire BMP image */
 typedef struct {
-    BMP_HEADER header;
+    bmp_header_t header;
     unsigned char *px_array;
-} BMP_IMAGE;
+} bmp_image_t;
 
 /* Function Prototypes */
 
 /*
  *  * Given an open file handle, read in a bmp image
  *   */
-BMP_IMAGE
-read_file(FILE *file, char **err);
+bmp_image_t*
+read_bmp(FILE *file, char **err);
 
 /* Given an open file handle, write out a bmp image */
 bool
-write_bmp(FILE *file, BMP_IMAGE *bmp_image, char **err);
+write_bmp(FILE *file, bmp_image_t *bmp_image, char **err);
 
-/* Given an open file handle, validate the BMP_HEADER (using our criteria) */
+/* Given an open file handle, validate the bmp_header_t (using our criteria) */
 bool
-check_bmp_header(BMP_HEADER *bmp_header, FILE *file);
+check_bmp_header(bmp_header_t *bmp_header, FILE *file);
 
-/* Free memory allocated by BMP_IMAGE */
+/* Free memory allocated by bmp_image_t */
 void
-free_bmp(BMP_IMAGE *bmp_image);
+free_bmp(bmp_image_t *bmp_image);
+
+
+void display_header(bmp_header_t h);
 
 
 #endif /* bmp.h */
