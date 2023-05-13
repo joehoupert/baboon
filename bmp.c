@@ -166,7 +166,7 @@ write_bmp(FILE *file, bmp_image_t *bmp_image, char **err)
     {
         if(*err == NULL)
         {
-            char *msg = "ERROR: \"fwite\" failed";
+            char *msg = "ERROR: \"fwrite\" failed";
             *err == malloc( (strlen(msg) + 1) * sizeof(**err) );
             strncpy(*err, msg, sizeof(*err));
         }
@@ -178,6 +178,10 @@ write_bmp(FILE *file, bmp_image_t *bmp_image, char **err)
 
 
 
-
 void
-free_bmp(bmp_image_t *bmp_image);
+free_bmp(bmp_image_t *bmp_image)
+{
+    free(bmp_image->px_array);
+    free(bmp_image);
+    return;
+}
