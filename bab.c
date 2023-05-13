@@ -78,6 +78,7 @@ int main()
     }
     fclose(out_file);
 
+    free(b);
 
     return 0;
 }
