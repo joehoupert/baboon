@@ -58,7 +58,7 @@ int main()
  * Write out a bitmap
  *
  */
-    char *out_file_name = "baboon_out.bmp";
+    char *out_file_name = "baboon_grey.bmp";
 
     FILE *out_file;
     out_file = fopen(out_file_name, "wb");
@@ -67,6 +67,8 @@ int main()
         printf("Error getting file handle: %s\n",out_file_name);
     }
 
+    b = bmp_to_greyscale(b, &err);
+
     bool write_ok = write_bmp(out_file, b, &err);
 
     if(!write_ok)
@@ -74,7 +76,6 @@ int main()
         /* TODO */
         printf("TODO: handle\n");
         fclose(out_file);
-        
     }
     fclose(out_file);
 

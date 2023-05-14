@@ -155,10 +155,6 @@ write_bmp(FILE *file, bmp_image_t *bmp_image, char **err)
     size_t header_written = 0;
     header_written = fwrite(&bmp_image->header, BMP_HEADER_SIZE, 1, file);
 
-    /* TODO */
-    printf("TODO: header_written = %zi\n",header_written);
-
-
     size_t img_written = 0;
     img_written = fwrite(bmp_image->px_array, bmp_image->header.image_size, 1, file);
 
@@ -177,7 +173,6 @@ write_bmp(FILE *file, bmp_image_t *bmp_image, char **err)
 }
 
 
-
 void
 free_bmp(bmp_image_t *bmp_image)
 {
@@ -185,3 +180,41 @@ free_bmp(bmp_image_t *bmp_image)
     free(bmp_image);
     return;
 }
+
+
+bmp_image_t *
+bmp_to_greyscale(bmp_image_t *original, char **err)
+{
+    /* Header remains the same, only touching the px_array */
+    bmp_header_t h;
+
+    h = original->header;
+
+    unsigned char *px_array = (unsigned char *)malloc( h.image_size);
+
+    int px = 0;
+    int grey = 0;
+
+    /* TODO": PADDING */
+    for(px = 0; px < h.image_size; px+=3)
+    {
+        grey = (original->px_array[px]*B_WT) +
+               (original->px_array[px+1]*G_WT) +
+               (original->px_array[px+2]*R_WT) / 3;
+
+        px_array[px] = grey;
+        px_array[px+1] = grey;
+        px_array[px+2] = grey;
+    }
+
+    /* malloc a bmp_image_t and assign the header and pixel array */
+    bmp_image_t *b;
+    b = (bmp_image_t *)malloc(sizeof(*b));
+
+    b->px_array = px_array;
+    b->header = h;
+
+    return b;
+}
+
+

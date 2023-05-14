@@ -59,6 +59,8 @@ check_bmp_header(bmp_header_t *bmp_header, FILE *file);
 void
 free_bmp(bmp_image_t *bmp_image);
 
+bmp_image_t *
+bmp_to_greyscale(bmp_image_t *original, char **err);
 
 void display_header(bmp_header_t h);
 
