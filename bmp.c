@@ -36,7 +36,10 @@ bool check_bmp_header(bmp_header_t *bmp_header, FILE *file)
     int width_bytes = bmp_header->width_px * bmp_header->color_depth / 8 + padding;
     int size = width_bytes * bmp_header->height_px;
     if(size != bmp_header->image_size) return false;
-
+    {
+        // Apparently 0 is a valid image size...
+        bmp_header->image_size = size;
+    }
 
     /* Check size of input file */
     int input_size;
@@ -64,8 +67,9 @@ bmp_image_t *read_bmp(FILE *file, char **err)
     bmp_header_t h;
     bool header_ok = false;
     size_t img_read = 0;
-
     size_t header_read = 0;
+
+
     rewind(file);
     header_read = fread(&h, sizeof(bmp_header_t), 1, file);
 
@@ -73,13 +77,14 @@ bmp_image_t *read_bmp(FILE *file, char **err)
         if(*err == NULL)
         {
             char *msg = "ERROR: \"fread\" of header failed";
-            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
-            strncpy(*err, msg, sizeof(*err));
+            *err = malloc(strlen(msg) + 1);
+            strcpy(*err, msg);
         }
         b = NULL;
         return b;
     }
 
+    display_header(h);
 
     header_ok = check_bmp_header(&h, file);
 
@@ -88,8 +93,8 @@ bmp_image_t *read_bmp(FILE *file, char **err)
         if(*err == NULL)
         {
             char *msg = "ERROR: \"check_bmp_header\" failed";
-            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
-            strncpy(*err, msg, sizeof(*err));
+            *err = malloc(strlen(msg) + 1);
+            strcpy(*err, msg);
         }
         b = NULL;
         return b;
@@ -104,25 +109,27 @@ bmp_image_t *read_bmp(FILE *file, char **err)
 
         if(*err == NULL){
             char *msg = "ERROR: \"malloc\" failed";
-            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
-            strncpy(*err, msg, sizeof(*err));
+            *err = malloc(strlen(msg) + 1);
+            strcpy(*err, msg);
         }
         b = NULL;
         return b;
     }
+printf("LINE: %d\n",__LINE__);
 
     /* Does fseek fail? */
     fseek(file, h.offset, SEEK_SET);
 
     img_read = fread(px_array, h.image_size, 1, file);
+printf("LINE: %d\n",__LINE__);
 
     if(img_read != 1)
     {
         if(*err == NULL)
         {
             char *msg = "ERROR: \"fread\" of pixel array failed";
-            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
-            strncpy(*err, msg, sizeof(*err));
+            *err = malloc(strlen(msg) + 1);
+            strcpy(*err, msg);
         }
         b = NULL;
         return b;
@@ -163,8 +170,8 @@ write_bmp(FILE *file, bmp_image_t *bmp_image, char **err)
         if(*err == NULL)
         {
             char *msg = "ERROR: \"fwrite\" failed";
-            *err = malloc( (strlen(msg) + 1) * sizeof(**err) );
-            strncpy(*err, msg, sizeof(*err));
+            *err = malloc(strlen(msg) + 1);
+            strcpy(*err, msg);
         }
         return false;
     }
@@ -195,6 +202,10 @@ bmp_to_greyscale(bmp_image_t *original, char **err)
     int px = 0;
     int grey = 0;
 
+    /* 
+     * Assume compression type 0 (R,G,B)
+     * We're also little endian, so every 3 bytes are B,G,R
+     */
     /* TODO": PADDING */
     for(px = 0; px < h.image_size; px+=3)
     {
@@ -210,6 +221,8 @@ bmp_to_greyscale(bmp_image_t *original, char **err)
     /* malloc a bmp_image_t and assign the header and pixel array */
     bmp_image_t *b;
     b = (bmp_image_t *)malloc(sizeof(*b));
+
+    /* TODO: check malloc */
 
     b->px_array = px_array;
     b->header = h;
